@@ -17,3 +17,19 @@ class UserListSerializer(serializers.ModelSerializer):
             'email',
             'avatar',
         )
+
+
+class UserRetrieveSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'id',
+            'username',
+            'email',
+            'avatar',
+            'created_at',
+            'updated_at',
+            'is_staff',
+            'is_superuser',
+        )
+

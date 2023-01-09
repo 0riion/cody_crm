@@ -1,8 +1,10 @@
+
+from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import User
-from .serializers import UserListSerializer
+from .serializers import UserListSerializer, UserSerializer, UserRetrieveSerializer
 
 
 class UserView(viewsets.GenericViewSet):
@@ -55,5 +57,20 @@ class UserView(viewsets.GenericViewSet):
             deleted_at=None,
             pk=pk
         )
-        serializer = UserListSerializer(queryset, many=True)
+        serializer = UserRetrieveSerializer(queryset, many=True)
         return Response(serializer.data[0], status=status.HTTP_200_OK)
+
+    def create(self, request):
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, pk=None):
+        queryset = get_object_or_404(self.model, pk=pk)
+        serializer = UserSerializer(queryset, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

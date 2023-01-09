@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, PermissionsMixin
 from .mangers import UserManager
 
+
 class User(AbstractUser, PermissionsMixin):
     id = models.CharField(
         max_length=255,
