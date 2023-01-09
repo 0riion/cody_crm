@@ -27,7 +27,9 @@ THIRD_PARTY_APPS = [
     'rest_framework_simplejwt',
 ]
 
-LOCAL_APPS = []
+LOCAL_APPS = [
+    'services.users',
+]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
@@ -76,10 +78,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'users.User'
+
 ###############################################################################
 ############################## Development Config #############################
 ###############################################################################
-
 
 ALLOWED_HOSTS = ['*']
 SECRET_KEY = 'django-insecure-0oiibs(6x(x(m7za=2y1+_5o2tw9jtur=54zj2xex8m4(04+@1'
