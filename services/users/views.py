@@ -18,7 +18,7 @@ class UserView(viewsets.GenericViewSet):
         return self.queryset
 
     def get_permissions(self):
-        if self.request.method in ():
+        if self.request.method in ('POST'):
             self.permission_classes = [AllowAny, ]
         else:
             self.permission_classes = [IsAuthenticated, ]
