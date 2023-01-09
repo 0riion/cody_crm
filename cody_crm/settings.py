@@ -5,15 +5,22 @@ SECRET_KEY = 'django-insecure-0oiibs(6x(x(m7za=2y1+_5o2tw9jtur=54zj2xex8m4(04+@1
 DEBUG = True
 ALLOWED_HOSTS = ['*']
 
-INSTALLED_APPS = [
+DJANGO_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+]
+
+THIRD_PARTY_APPS = [
     'rest_framework',
 ]
+
+LOCAL_APPS = []
+
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
