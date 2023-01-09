@@ -12,7 +12,7 @@ class UserView(viewsets.GenericViewSet):
 
     def get_queryset(self):
         if self.queryset is None:
-            self.queryset = self.model.objects.all()
+            self.queryset = self.model.objects
         return self.queryset
 
     def get_permissions(self):
@@ -48,3 +48,12 @@ class UserView(viewsets.GenericViewSet):
         )
         serializer = UserListSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def retrieve(self, request, pk=None):
+        queryset = self.get_queryset().filter(
+            is_active=True,
+            deleted_at=None,
+            pk=pk
+        )
+        serializer = UserListSerializer(queryset, many=True)
+        return Response(serializer.data[0], status=status.HTTP_200_OK)
