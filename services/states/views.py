@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import State
 from .serializers import StateSerializer, StateListSerializer, StateRetrieveSerializer
+from ...libs.request_event import camel_to_snake_dict, snake_to_camel_dict
 
 
 class StateView(viewsets.GenericViewSet):
@@ -46,7 +47,10 @@ class StateView(viewsets.GenericViewSet):
                 **filter_request
             )
             serializer = StateListSerializer(queryset, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(
+                snake_to_camel_dict(serializer.data),
+                status=status.HTTP_200_OK
+            )
         except Exception as e:
             print('Error message: ', e)
             return Response({}, status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -59,17 +63,24 @@ class StateView(viewsets.GenericViewSet):
                 id=pk
             )
             serializer = StateRetrieveSerializer(queryset, many=True)
-            return Response(serializer.data[0], status=status.HTTP_200_OK)
+            return Response(
+                snake_to_camel_dict(serializer.data[0]),
+                status=status.HTTP_200_OK
+            )
         except Exception as e:
             print('Error message: ', e)
             return Response({}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def create(self, request):
         try:
-            serializer = StateSerializer(data=request.data)
+            body = camel_to_snake_dict(request.data)
+            serializer = StateSerializer(data=body)
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                return Response(
+                    snake_to_camel_dict(serializer.data),
+                    status=status.HTTP_201_CREATED
+                )
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             print('Error message: ', e)
@@ -78,10 +89,14 @@ class StateView(viewsets.GenericViewSet):
     def update(self, request, pk=None):
         try:
             queryset = get_object_or_404(self.get_queryset(), id=pk)
-            serializer = StateSerializer(queryset, data=request.data)
+            body = camel_to_snake_dict(request.data)
+            serializer = StateSerializer(queryset, data=body)
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                return Response(
+                    snake_to_camel_dict(serializer.data),
+                    status=status.HTTP_200_OK
+                )
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             print('Error message: ', e)
@@ -90,11 +105,14 @@ class StateView(viewsets.GenericViewSet):
     def partial_update(self, request, pk=None):
         try:
             queryset = get_object_or_404(self.get_queryset(), id=pk)
-            serializer = StateSerializer(
-                queryset, data=request.data, partial=True)
+            body = camel_to_snake_dict(request.data)
+            serializer = StateSerializer(queryset, data=body, partial=True)
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                return Response(
+                    snake_to_camel_dict(serializer.data),
+                    status=status.HTTP_200_OK
+                )
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             print('Error message: ', e)
