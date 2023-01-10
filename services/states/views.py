@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import State
 from .serializers import StateSerializer, StateListSerializer, StateRetrieveSerializer
-from ...libs.request_event import camel_to_snake_dict, snake_to_camel_dict
+from libs.request_event import camel_to_snake_dict, snake_to_camel_dict
 
 
 class StateView(viewsets.GenericViewSet):

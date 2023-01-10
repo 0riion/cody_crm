@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import User
 from .serializers import UserListSerializer, UserSerializer, UserRetrieveSerializer
-from ...libs.request_event import camel_to_snake_dict, snake_to_camel_dict
+from libs.request_event import camel_to_snake_dict, snake_to_camel_dict
 
 
 class UserView(viewsets.GenericViewSet):

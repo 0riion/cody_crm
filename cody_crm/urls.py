@@ -17,4 +17,5 @@ urlpatterns = [
     path(f'{API_VERSION}/api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     path(f'{API_VERSION}/api/', include('services.users.urls')),
     path(f'{API_VERSION}/api/', include('services.states.urls')),
+    path(f'{API_VERSION}/api/', include('services.category.urls')),
 ]
