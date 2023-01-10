@@ -41,11 +41,11 @@ class Provider(models.Model):
         null=False
     )
 
-    address = models.ForeignKey(
+    address = models.ManyToManyField(
         Address,
-        on_delete=models.CASCADE,
+        related_name='provider_address',
         blank=False,
-        null=False,
+        null=False
     )
 
     created_at = models.DateTimeField(
