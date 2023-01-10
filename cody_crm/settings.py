@@ -30,6 +30,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     'services.users',
     'services.states',
+    'services.city',
     'services.category',
     'services.order_status',
 ]
