@@ -18,6 +18,7 @@ class AddressListSerializer(serializers.ModelSerializer):
             'id',
             'address',
             'zipcode',
+            'city',
         )
 
 
