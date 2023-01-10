@@ -36,7 +36,6 @@ class Product(models.Model):
     price = models.ManyToManyField(
         Price,
         blank=False,
-        null=False
     )
 
     created_at = models.DateTimeField(

@@ -45,7 +45,6 @@ class Provider(models.Model):
         Address,
         related_name='provider_address',
         blank=False,
-        null=False
     )
 
     created_at = models.DateTimeField(

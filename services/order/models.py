@@ -46,7 +46,6 @@ class Order(models.Model):
     product = models.ManyToManyField(
         Product,
         blank=False,
-        null=False,
         related_name='product'
     )
 
