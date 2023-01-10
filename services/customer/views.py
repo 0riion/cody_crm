@@ -4,13 +4,13 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from .models import Category
-from .serializers import CategorySerializer, CategoryListSerializer, CategoryRetrieveSerializer
+from .models import Customer
+from .serializers import CustomerSerializer, CustomerListSerializer, CustomerRetrieveSerializer
 from libs.request_event import camel_to_snake_dict, snake_to_camel_dict
 
 
-class CategoryView(viewsets.GenericViewSet):
-    model = Category
+class CustomerView(viewsets.GenericViewSet):
+    model = Customer
     queryset = None
     permission_classes = None
 
@@ -29,13 +29,26 @@ class CategoryView(viewsets.GenericViewSet):
 
     def list(self, request):
         try:
-            category_name = request.query_params.get('category_name', None)
+            identification = request.query_params.get('identification', None)
+            first_name = request.query_params.get('first_name', None)
+            last_name = request.query_params.get('last_name', None)
+            email = request.query_params.get('email', None)
+            phone = request.query_params.get('phone', None)
             created_date_start = request.query_params.get('created_date', None)
             created_date_end = request.query_params.get('created_date', None)
 
             filter_request = {}
-            if category_name:
-                filter_request['category_name__contains'] = category_name
+            if identification:
+                filter_request['identification__contains'] = identification
+            if first_name:
+                filter_request['first_name__contains'] = first_name
+            if last_name:
+                filter_request['last_name__contains'] = last_name
+            if email:
+                filter_request['email__contains'] = email
+            if phone:
+                filter_request['phone__contains'] = phone
+
             if created_date_start and created_date_end:
                 filter_request['created_at__gte'] = created_date_start
                 filter_request['created_at__lte'] = created_date_end
@@ -45,7 +58,7 @@ class CategoryView(viewsets.GenericViewSet):
                 deleted_at=None,
                 **filter_request
             )
-            serializer = CategoryListSerializer(queryset, many=True)
+            serializer = CustomerListSerializer(queryset, many=True)
             return Response(
                 [snake_to_camel_dict(item) for item in serializer.data],
                 status=status.HTTP_200_OK
@@ -57,7 +70,7 @@ class CategoryView(viewsets.GenericViewSet):
     def retrieve(self, request, pk=None):
         try:
             queryset = get_object_or_404(self.get_queryset(), pk=pk)
-            serializer = CategoryRetrieveSerializer(queryset)
+            serializer = CustomerRetrieveSerializer(queryset)
             return Response(
                 snake_to_camel_dict(serializer.data),
                 status=status.HTTP_200_OK
@@ -68,7 +81,7 @@ class CategoryView(viewsets.GenericViewSet):
 
     def create(self, request):
         try:
-            serializer = CategorySerializer(
+            serializer = CustomerSerializer(
                 data=camel_to_snake_dict(request.data))
             if serializer.is_valid():
                 serializer.save()
@@ -76,18 +89,15 @@ class CategoryView(viewsets.GenericViewSet):
                     snake_to_camel_dict(serializer.data),
                     status=status.HTTP_201_CREATED
                 )
-            return Response(
-                snake_to_camel_dict(serializer.errors),
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             print('Error message: ', e)
             return Response({}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def update(self, request, pk=None):
         try:
-            queryset = get_object_or_404(self.get_queryset(), id=pk)
-            serializer = CategorySerializer(
+            queryset = get_object_or_404(self.get_queryset(), pk=pk)
+            serializer = CustomerSerializer(
                 queryset, data=camel_to_snake_dict(request.data))
             if serializer.is_valid():
                 serializer.save()
@@ -95,18 +105,15 @@ class CategoryView(viewsets.GenericViewSet):
                     snake_to_camel_dict(serializer.data),
                     status=status.HTTP_200_OK
                 )
-            return Response(
-                snake_to_camel_dict(serializer.errors),
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             print('Error message: ', e)
             return Response({}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def partial_update(self, request, pk=None):
         try:
-            queryset = get_object_or_404(self.get_queryset(), id=pk)
-            serializer = CategorySerializer(
+            queryset = get_object_or_404(self.get_queryset(), pk=pk)
+            serializer = CustomerSerializer(
                 queryset, data=camel_to_snake_dict(request.data), partial=True)
             if serializer.is_valid():
                 serializer.save()
@@ -114,19 +121,19 @@ class CategoryView(viewsets.GenericViewSet):
                     snake_to_camel_dict(serializer.data),
                     status=status.HTTP_200_OK
                 )
-            return Response(
-                snake_to_camel_dict(serializer.errors),
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             print('Error message: ', e)
             return Response({}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def destroy(self, request, pk=None):
         try:
-            queryset = get_object_or_404(self.get_queryset(), id=pk)
-            queryset.category_name += str(uuid.uuid4()) + '_deleted'
-            queryset.description = str(uuid.uuid4()) + '_deleted'
+            queryset = get_object_or_404(self.get_queryset(), pk=pk)
+            queryset.first_name = str(uuid.uuid4()) + '_deleted'
+            queryset.last_name = str(uuid.uuid4()) + '_deleted'
+            queryset.email = str(uuid.uuid4()) + '_deleted'
+            queryset.phone = str(uuid.uuid4()) + '_deleted'
+            queryset.identification = str(uuid.uuid4()) + '_deleted'
             queryset.is_active = False
             queryset.deleted_at = timezone.now()
             queryset.save()
