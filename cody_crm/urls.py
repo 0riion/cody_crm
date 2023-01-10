@@ -19,6 +19,7 @@ urlpatterns = [
     path(f'{API_VERSION}/{CHILD_API_PATH}/', include('services.users.urls')),
     path(f'{API_VERSION}/{CHILD_API_PATH}/', include('services.states.urls')),
     path(f'{API_VERSION}/{CHILD_API_PATH}/', include('services.city.urls')),
+    path(f'{API_VERSION}/{CHILD_API_PATH}/', include('services.address.urls')),
     path(f'{API_VERSION}/{CHILD_API_PATH}/', include('services.category.urls')),
     path(f'{API_VERSION}/{CHILD_API_PATH}/', include('services.order_status.urls')),
 ]

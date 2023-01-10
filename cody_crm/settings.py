@@ -31,6 +31,7 @@ LOCAL_APPS = [
     'services.users',
     'services.states',
     'services.city',
+    'services.address',
     'services.category',
     'services.order_status',
 ]
