@@ -4,13 +4,13 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from .models import State
-from .serializers import StateSerializer, StateListSerializer, StateRetrieveSerializer
+from .models import OrderStatus
+from .serializers import OrderStatusSerializer, OrderStatusListSerializer, OrderStatusRetrieveSerializer
 from libs.request_event import camel_to_snake_dict, snake_to_camel_dict
 
 
-class StateView(viewsets.GenericViewSet):
-    model = State
+class OrderStatusView(viewsets.GenericViewSet):
+    model = OrderStatus
     queryset = None
     permission_classes = None
 
@@ -29,13 +29,13 @@ class StateView(viewsets.GenericViewSet):
 
     def list(self, request):
         try:
-            state_name = request.query_params.get('state_name', None)
+            order_status = request.query_params.get('order_status', None)
             created_date_start = request.query_params.get('created_date', None)
             created_date_end = request.query_params.get('created_date', None)
 
             filter_request = {}
-            if state_name:
-                filter_request['state_name'] = state_name
+            if order_status:
+                filter_request['order_status'] = order_status
 
             if created_date_start and created_date_end:
                 filter_request['created_at__gte'] = created_date_start
@@ -46,7 +46,7 @@ class StateView(viewsets.GenericViewSet):
                 deleted_at=None,
                 **filter_request
             )
-            serializer = StateListSerializer(queryset, many=True)
+            serializer = OrderStatusListSerializer(queryset, many=True)
             return Response(
                 [snake_to_camel_dict(item) for item in serializer.data],
                 status=status.HTTP_200_OK
@@ -57,14 +57,10 @@ class StateView(viewsets.GenericViewSet):
 
     def retrieve(self, request, pk=None):
         try:
-            queryset = self.get_queryset().filter(
-                is_active=True,
-                deleted_at=None,
-                id=pk
-            )
-            serializer = StateRetrieveSerializer(queryset, many=True)
+            queryset = get_object_or_404(self.get_queryset(), pk=pk)
+            serializer = OrderStatusRetrieveSerializer(queryset)
             return Response(
-                snake_to_camel_dict(serializer.data[0]),
+                snake_to_camel_dict(serializer.data),
                 status=status.HTTP_200_OK
             )
         except Exception as e:
@@ -73,57 +69,66 @@ class StateView(viewsets.GenericViewSet):
 
     def create(self, request):
         try:
-            body = camel_to_snake_dict(request.data)
-            serializer = StateSerializer(data=body)
+            serializer = OrderStatusSerializer(
+                data=camel_to_snake_dict(request.data))
             if serializer.is_valid():
                 serializer.save()
                 return Response(
                     snake_to_camel_dict(serializer.data),
                     status=status.HTTP_201_CREATED
                 )
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                snake_to_camel_dict(serializer.errors),
+                status=status.HTTP_400_BAD_REQUEST
+            )
         except Exception as e:
             print('Error message: ', e)
             return Response({}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def update(self, request, pk=None):
         try:
-            queryset = get_object_or_404(self.get_queryset(), id=pk)
-            body = camel_to_snake_dict(request.data)
-            serializer = StateSerializer(queryset, data=body)
+            queryset = get_object_or_404(self.get_queryset(), pk=pk)
+            serializer = OrderStatusSerializer(
+                queryset, data=camel_to_snake_dict(request.data))
             if serializer.is_valid():
                 serializer.save()
                 return Response(
                     snake_to_camel_dict(serializer.data),
                     status=status.HTTP_200_OK
                 )
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                snake_to_camel_dict(serializer.errors),
+                status=status.HTTP_400_BAD_REQUEST
+            )
         except Exception as e:
             print('Error message: ', e)
             return Response({}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def partial_update(self, request, pk=None):
         try:
-            queryset = get_object_or_404(self.get_queryset(), id=pk)
-            body = camel_to_snake_dict(request.data)
-            serializer = StateSerializer(queryset, data=body, partial=True)
+            queryset = get_object_or_404(self.get_queryset(), pk=pk)
+            serializer = OrderStatusSerializer(
+                queryset, data=camel_to_snake_dict(request.data), partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response(
                     snake_to_camel_dict(serializer.data),
                     status=status.HTTP_200_OK
                 )
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                snake_to_camel_dict(serializer.errors),
+                status=status.HTTP_400_BAD_REQUEST
+            )
         except Exception as e:
             print('Error message: ', e)
             return Response({}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def destroy(self, request, pk=None):
         try:
-            queryset = get_object_or_404(self.get_queryset(), id=pk)
-            queryset.state_name += str(uuid.uuid4()) + ' _deleted'
+            queryset = get_object_or_404(self.get_queryset(), pk=pk)
+            queryset.order_status = str(uuid.uuid4()) + '_deleted'
+            queryset.description = str(uuid.uuid4()) + '_deleted'
             queryset.deleted_at = timezone.now()
-            queryset.is_active = False
             queryset.save()
             return Response({}, status=status.HTTP_204_NO_CONTENT)
         except Exception as e:

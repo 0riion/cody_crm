@@ -48,7 +48,7 @@ class CategoryView(viewsets.GenericViewSet):
             )
             serializer = CategoryListSerializer(queryset, many=True)
             return Response(
-                snake_to_camel_dict(serializer.data),
+                [snake_to_camel_dict(item) for item in serializer.data],
                 status=status.HTTP_200_OK
             )
         except Exception as e:
