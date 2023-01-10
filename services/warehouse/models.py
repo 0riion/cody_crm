@@ -3,7 +3,7 @@ from django.db import models
 from services.address.models import Address
 
 
-class Customer(models.Model):
+class Warehouse(models.Model):
     id = models.CharField(
         max_length=255,
         unique=True,
@@ -12,45 +12,26 @@ class Customer(models.Model):
         primary_key=True,
         default=uuid.uuid4
     )
-    # TODO: add optional fields and create a service fot identification types
-    identification = models.CharField(
+
+    warehouse_name = models.CharField(
         max_length=255,
         unique=True,
         blank=False,
         null=False
     )
 
-    first_name = models.CharField(
+    description = models.CharField(
         max_length=255,
         unique=False,
-        blank=False,
-        null=False
-    )
-
-    last_name = models.CharField(
-        max_length=255,
-        unique=False,
-        blank=False,
-        null=False
-    )
-
-    email = models.CharField(
-        max_length=255,
-        unique=True,
         blank=True,
         null=True
     )
 
-    phone = models.CharField(
-        max_length=255,
-        unique=True,
-        blank=True,
-        null=True
-    )
-
-    address = models.ManyToManyField(
+    address = models.ForeignKey(
         Address,
-        blank=True,
+        on_delete=models.CASCADE,
+        blank=False,
+        null=False
     )
 
     created_at = models.DateTimeField(
@@ -80,8 +61,6 @@ class Customer(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Customer'
-        verbose_name_plural = 'Customers'
-
-    def __str__(self):
-        return self.first_name + ' ' + self.last_name
+        verbose_name = 'Warehouse'
+        verbose_name_plural = 'Warehouses'
+        ordering = ['created_at']
