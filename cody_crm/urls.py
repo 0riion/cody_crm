@@ -28,4 +28,5 @@ urlpatterns = [
     path(f'{API_VERSION}/{CHILD_API_PATH}/', include('services.units_of_measure.urls')),
     path(f'{API_VERSION}/{CHILD_API_PATH}/', include('services.price.urls')),
     path(f'{API_VERSION}/{CHILD_API_PATH}/', include('services.product.urls')),
+    path(f'{API_VERSION}/{CHILD_API_PATH}/', include('services.order.urls')),
 ]
