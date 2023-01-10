@@ -35,8 +35,7 @@ class CategoryView(viewsets.GenericViewSet):
 
             filter_request = {}
             if category_name:
-                filter_request['category_name'] = category_name
-
+                filter_request['category_name__contains'] = category_name
             if created_date_start and created_date_end:
                 filter_request['created_at__gte'] = created_date_start
                 filter_request['created_at__lte'] = created_date_end
@@ -48,7 +47,7 @@ class CategoryView(viewsets.GenericViewSet):
             )
             serializer = CategoryListSerializer(queryset, many=True)
             return Response(
-                snake_to_camel_dict(serializer.data),
+                [snake_to_camel_dict(item) for item in serializer.data],
                 status=status.HTTP_200_OK
             )
         except Exception as e:
@@ -57,14 +56,10 @@ class CategoryView(viewsets.GenericViewSet):
 
     def retrieve(self, request, pk=None):
         try:
-            queryset = self.get_queryset().filter(
-                is_active=True,
-                deleted_at=None,
-                id=pk
-            )
-            serializer = CategoryRetrieveSerializer(queryset, many=True)
+            queryset = get_object_or_404(self.get_queryset(), pk=pk)
+            serializer = CategoryRetrieveSerializer(queryset)
             return Response(
-                snake_to_camel_dict(serializer.data[0]),
+                snake_to_camel_dict(serializer.data),
                 status=status.HTTP_200_OK
             )
         except Exception as e:

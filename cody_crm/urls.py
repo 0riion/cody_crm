@@ -9,13 +9,23 @@ from rest_framework_simplejwt.views import (
 )
 
 API_VERSION = 'v1'
+CHILD_API_PATH = 'api'
 
 urlpatterns = [
     path(f'{API_VERSION}/admin/', admin.site.urls),
-    path(f'{API_VERSION}/api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path(f'{API_VERSION}/api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path(f'{API_VERSION}/api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
-    path(f'{API_VERSION}/api/', include('services.users.urls')),
-    path(f'{API_VERSION}/api/', include('services.states.urls')),
-    path(f'{API_VERSION}/api/', include('services.category.urls')),
+    path(f'{API_VERSION}/{CHILD_API_PATH}/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path(f'{API_VERSION}/{CHILD_API_PATH}/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path(f'{API_VERSION}/{CHILD_API_PATH}/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+    path(f'{API_VERSION}/{CHILD_API_PATH}/', include('services.users.urls')),
+    path(f'{API_VERSION}/{CHILD_API_PATH}/', include('services.states.urls')),
+    path(f'{API_VERSION}/{CHILD_API_PATH}/', include('services.city.urls')),
+    path(f'{API_VERSION}/{CHILD_API_PATH}/', include('services.address.urls')),
+    path(f'{API_VERSION}/{CHILD_API_PATH}/', include('services.category.urls')),
+    path(f'{API_VERSION}/{CHILD_API_PATH}/', include('services.order_status.urls')),
+    path(f'{API_VERSION}/{CHILD_API_PATH}/', include('services.provider.urls')),
+    path(f'{API_VERSION}/{CHILD_API_PATH}/', include('services.customer.urls')),
+    path(f'{API_VERSION}/{CHILD_API_PATH}/', include('services.warehouse.urls')),
+    path(f'{API_VERSION}/{CHILD_API_PATH}/', include('services.units_of_measure.urls')),
+    path(f'{API_VERSION}/{CHILD_API_PATH}/', include('services.price.urls')),
+    path(f'{API_VERSION}/{CHILD_API_PATH}/', include('services.product.urls')),
 ]

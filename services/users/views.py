@@ -51,7 +51,10 @@ class UserView(viewsets.GenericViewSet):
                 **filter_request
             )
             serializer = UserListSerializer(queryset, many=True)
-            return Response(snake_to_camel_dict(serializer.data), status=status.HTTP_200_OK)
+            return Response(
+                [snake_to_camel_dict(item) for item in serializer.data],
+                status=status.HTTP_200_OK
+            )
         except Exception as e:
             print('Error message: ', e)
             return Response({}, status.HTTP_500_INTERNAL_SERVER_ERROR)
