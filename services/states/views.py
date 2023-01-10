@@ -4,12 +4,12 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from .models import User
-from .serializers import UserListSerializer, UserSerializer, UserRetrieveSerializer
+from .models import State
+from .serializers import StateSerializer, StateListSerializer, StateRetrieveSerializer
 
 
-class UserView(viewsets.GenericViewSet):
-    model = User
+class StateView(viewsets.GenericViewSet):
+    model = State
     queryset = None
     permission_classes = None
 
@@ -19,7 +19,7 @@ class UserView(viewsets.GenericViewSet):
         return self.queryset
 
     def get_permissions(self):
-        if self.request.method in ('POST'):
+        if self.request.method in ():
             self.permission_classes = [AllowAny, ]
         else:
             self.permission_classes = [IsAuthenticated, ]
@@ -28,17 +28,13 @@ class UserView(viewsets.GenericViewSet):
 
     def list(self, request):
         try:
-            email = request.query_params.get('email', None)
-            user_name = request.query_params.get('user_name', None)
+            state_name = request.query_params.get('state_name', None)
             created_date_start = request.query_params.get('created_date', None)
             created_date_end = request.query_params.get('created_date', None)
 
             filter_request = {}
-            if user_name:
-                filter_request['username'] = user_name
-
-            if email:
-                filter_request['email'] = email
+            if state_name:
+                filter_request['state_name'] = state_name
 
             if created_date_start and created_date_end:
                 filter_request['created_at__gte'] = created_date_start
@@ -49,7 +45,7 @@ class UserView(viewsets.GenericViewSet):
                 deleted_at=None,
                 **filter_request
             )
-            serializer = UserListSerializer(queryset, many=True)
+            serializer = StateListSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             print('Error message: ', e)
@@ -60,9 +56,9 @@ class UserView(viewsets.GenericViewSet):
             queryset = self.get_queryset().filter(
                 is_active=True,
                 deleted_at=None,
-                pk=pk
+                id=pk
             )
-            serializer = UserRetrieveSerializer(queryset, many=True)
+            serializer = StateRetrieveSerializer(queryset, many=True)
             return Response(serializer.data[0], status=status.HTTP_200_OK)
         except Exception as e:
             print('Error message: ', e)
@@ -70,8 +66,7 @@ class UserView(viewsets.GenericViewSet):
 
     def create(self, request):
         try:
-
-            serializer = UserSerializer(data=request.data)
+            serializer = StateSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -82,8 +77,8 @@ class UserView(viewsets.GenericViewSet):
 
     def update(self, request, pk=None):
         try:
-            queryset = get_object_or_404(self.model, pk=pk)
-            serializer = UserSerializer(queryset, data=request.data)
+            queryset = get_object_or_404(self.get_queryset(), id=pk)
+            serializer = StateSerializer(queryset, data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
@@ -94,8 +89,8 @@ class UserView(viewsets.GenericViewSet):
 
     def partial_update(self, request, pk=None):
         try:
-            queryset = get_object_or_404(self.model, pk=pk)
-            serializer = UserSerializer(
+            queryset = get_object_or_404(self.get_queryset(), id=pk)
+            serializer = StateSerializer(
                 queryset, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
@@ -107,13 +102,12 @@ class UserView(viewsets.GenericViewSet):
 
     def destroy(self, request, pk=None):
         try:
-            queryset = get_object_or_404(self.model, pk=pk)
-            queryset.username += str(uuid.uuid4()) + '_deleted'
-            queryset.email += str(uuid.uuid4()) + '_deleted'
-            queryset.is_active = False
+            queryset = get_object_or_404(self.get_queryset(), id=pk)
+            queryset.state_name += str(uuid.uuid4()) + ' _deleted'
             queryset.deleted_at = timezone.now()
+            queryset.is_active = False
             queryset.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response({}, status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
             print('Error message: ', e)
             return Response({}, status.HTTP_500_INTERNAL_SERVER_ERROR)
