@@ -1,19 +1,21 @@
 from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
-
+from .serializers import CustomTokenObtainPairSerializer
 from services.users.serializers import UserRetrieveSerializer
 from libs.request_event import snake_to_camel_dict
 
 
 class Login(TokenObtainPairView):
-    serializer_class = TokenObtainPairSerializer
+    serializer_class = CustomTokenObtainPairSerializer
 
     def post(self, request, *args, **kwargs):
         email = request.data.get('email', '')
         password = request.data.get('password', '')
+
+        print(email)
+        print(password)
 
         user = authenticate(
             email=email,

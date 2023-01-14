@@ -14,23 +14,30 @@ class User(AbstractUser, PermissionsMixin):
         default=uuid.uuid4
     )
 
+    username = models.CharField(
+        max_length=10,
+        unique=True,
+        blank=False,
+        null=False
+    )
+
     first_name = models.CharField(
         max_length=255,
         blank=True,
         null=True
     )
 
+    email = models.EmailField(
+        max_length=255,
+        unique=True,
+        blank=False,
+        null=False
+    )
+
     last_name = models.CharField(
         max_length=255,
         blank=True,
         null=True
-    )
-
-    username = models.CharField(
-        max_length=10,
-        unique=True,
-        blank=False,
-        null=False
     )
 
     email = models.EmailField(
@@ -81,7 +88,7 @@ class User(AbstractUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    REQUIRED_FIELDS = ['username', 'password']
 
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
