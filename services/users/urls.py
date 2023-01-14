@@ -5,11 +5,8 @@ from services.users import views
 
 router = DefaultRouter()
 
-router.register('users', views.UserViewSet, basename="users")
+router.register(r'users', views.UserViewSet, basename="users")
 
-urlpatterns = [
-    path('login/', views.Login.as_view(), name='login'),
-    path('logout/', views.Logout.as_view(), name='logout'),
-]
+urlpatterns = []
 
 urlpatterns += router.urls

@@ -29,7 +29,7 @@ class UserSerializer(serializers.ModelSerializer):
 class UpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', 'email')
+        fields = ('username', 'first_name', 'last_name', 'avatar')
 
 
 class PasswordSerializer(serializers.Serializer):
@@ -49,10 +49,26 @@ class PasswordSerializer(serializers.Serializer):
 class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
+        fields = (
+            'id',
+            'first_name',
+            'last_name',
+            'username',
+            'email',
+            'avatar',
+        )
 
-    def to_representation(self, instance):
-        return {
-            'id': instance['id'],
-            'username': instance['username'],
-            'email': instance['email']
-        }
+
+class UserRetrieveSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'id',
+            'username',
+            'email',
+            'avatar',
+            'created_at',
+            'updated_at',
+            'is_staff',
+            'is_superuser',
+        )

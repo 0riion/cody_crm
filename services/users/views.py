@@ -1,73 +1,25 @@
-import email
-from django.contrib.auth import authenticate
+import uuid
+from django.utils import timezone
 from django.shortcuts import get_object_or_404
-
 from rest_framework import status
-from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import viewsets
-
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenObtainPairView
-
-from services.users.serializers import (
-    CustomTokenObtainPairSerializer, CustomUserSerializer
-)
-from services.users.models import User
-
-
 from services.users.models import User
 from services.users.serializers import (
-    UserSerializer, UserListSerializer, UpdateUserSerializer,
-    PasswordSerializer
+    UserSerializer,
+    UserListSerializer,
+    UpdateUserSerializer,
+    PasswordSerializer,
+    UserRetrieveSerializer
 )
 
-
-class Login(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer
-
-    def post(self, request, *args, **kwargs):
-        email = request.data.get('email', '')
-        password = request.data.get('password', '')
-
-        user = authenticate(
-            email=email,
-            password=password
-        )
-        if user:
-            login_serializer = self.serializer_class(data=request.data)
-
-            if login_serializer.is_valid():
-                user_serializer = CustomUserSerializer(user)
-                return Response({
-                    'ok': True,
-                    'token': login_serializer.validated_data.get('access'),
-                    'refreshToken': login_serializer.validated_data.get('refresh'),
-                    'user': user_serializer.data,
-                    'message': 'Login successfull'
-                }, status=status.HTTP_200_OK)
-            return Response({'ok': False, 'message': 'Email or password wrong'}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({'ok': False, 'message': 'User does not exist or wrong login info'}, status=status.HTTP_400_BAD_REQUEST)
-
-
-class Logout(GenericAPIView):
-    serializer_class = UserSerializer
-
-    def post(self, request, *args, **kwargs):
-
-        user = User.objects.filter(email=request.data.get('email', 0))
-        if user.exists():
-            RefreshToken.for_user(user.first())
-            return Response({'ok': True, 'message': 'Logout correctly.'}, status=status.HTTP_200_OK)
-        return Response({'ok': False, 'message': 'User does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+from libs.request_event import camel_to_snake_dict, snake_to_camel_dict
 
 
 class UserViewSet(viewsets.GenericViewSet):
     model = User
-    serializer_class = UserSerializer
-    list_serializer_class = UserListSerializer
     queryset = None
     permission_classes = None
 
@@ -76,18 +28,16 @@ class UserViewSet(viewsets.GenericViewSet):
 
     def get_queryset(self):
         if self.queryset is None:
-            self.queryset = self.model.objects\
-                .filter(is_active=True)\
-                .values('id', 'username', 'email')
+            self.queryset = self.model.objects
         return self.queryset
 
     def get_permissions(self):
-        if self.request.method in ('GET', 'POST'):
+        if self.request.method in ('POST'):
             self.permission_classes = [AllowAny, ]
         else:
             self.permission_classes = [IsAuthenticated, ]
 
-        return super(self.__class__, self).get_permissions()
+        return super().get_permissions()
 
     @action(detail=True, methods=['post'])
     def set_password(self, request, pk=None):
@@ -118,65 +68,91 @@ class UserViewSet(viewsets.GenericViewSet):
 
     def list(self, request):
         try:
-            users = self.get_queryset()
-            users_serializer = self.list_serializer_class(users, many=True)
-            return Response({
-                'ok': True,
-                'message': 'Users listed correctly.',
-                'data': users_serializer.data,
-                'total': len(users_serializer.data)
-            }, status=status.HTTP_200_OK)
+            email = request.query_params.get('email', None)
+            user_name = request.query_params.get('user_name', None)
+            created_date_start = request.query_params.get('created_date', None)
+            created_date_end = request.query_params.get('created_date', None)
+
+            filter_request = {}
+            if user_name:
+                filter_request['username'] = user_name
+
+            if email:
+                filter_request['email'] = email
+
+            if created_date_start and created_date_end:
+                filter_request['created_at__gte'] = created_date_start
+                filter_request['created_at__lte'] = created_date_end
+
+            queryset = self.get_queryset().filter(
+                is_active=True,
+                deleted_at=None,
+                **filter_request
+            )
+            serializer = UserListSerializer(queryset, many=True)
+            return Response(
+                [snake_to_camel_dict(item) for item in serializer.data],
+                status=status.HTTP_200_OK
+            )
         except Exception as e:
-            print(e)
-            return Response({
-                'ok': False,
-                'message': 'Error listing users.',
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            print('Error message: ', e)
+            return Response({}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def retrieve(self, request, pk=None):
+        try:
+            queryset = get_object_or_404(self.model, pk=pk)
+            serializer = UserRetrieveSerializer(queryset)
+            return Response(
+                snake_to_camel_dict(serializer.data),
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            print('Error message: ', e)
+            return Response({}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def create(self, request):
         try:
-            user_serializer = self.serializer_class(data=request.data)
+            body = camel_to_snake_dict(request.data)
+            serializer = UserSerializer(data=body)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    snake_to_camel_dict(serializer.data),
+                    status=status.HTTP_201_CREATED
+                )
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print('Error message: ', e)
+            return Response({}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def update(self, request, pk=None):
+        try:
+            user = get_object_or_404(self.model, pk=pk)
+            user_serializer = UpdateUserSerializer(user, data=request.data)
+
             if user_serializer.is_valid():
                 user_serializer.save()
                 return Response({
                     'ok': True,
-                    'message': 'User created correctly.'
-                }, status=status.HTTP_201_CREATED)
-
+                    'message': 'User updated.'
+                }, status=status.HTTP_200_OK)
             return Response({
                 'ok': False,
-                'message': 'Register errors.',
+                'message': 'Updating errors.',
                 'errors': user_serializer.errors
             }, status=status.HTTP_400_BAD_REQUEST)
-
         except Exception as e:
             print(e)
             return Response({
                 'ok': False,
-                'message': 'Error creating user.',
+                'message': 'Error updating user.',
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def retrieve(self, request, pk=None):
+    def partial_update(self, request, pk=None):
         try:
-            user = self.get_object(pk)
-            user_serializer = self.serializer_class(user)
-
-            return Response({
-                'ok': True,
-                'user': user_serializer.data,
-                'message': 'UJser retrived correctly.'},
-                status=status.HTTP_200_OK)
-        except Exception as e:
-            print(e)
-            return Response({
-                'ok': False,
-                'message': 'Error getting user.',
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def update(self, request, pk=None):
-        try:
-            user = self.get_object(pk)
-            user_serializer = UpdateUserSerializer(user, data=request.data)
+            user = get_object_or_404(self.model, pk=pk)
+            user_serializer = UpdateUserSerializer(
+                user, data=request.data, partial=True)
 
             if user_serializer.is_valid():
                 user_serializer.save()
@@ -198,22 +174,13 @@ class UserViewSet(viewsets.GenericViewSet):
 
     def destroy(self, request, pk=None):
         try:
-            user_destroy = self.model.objects.filter(
-                id=pk).update(is_active=False)
-
-            if user_destroy == 1:
-                return Response({
-                    'ok': True,
-                    'message': 'User deleted.'
-                }, status=status.HTTP_200_OK)
-
-            return Response({
-                'ok': False,
-                'message': 'User not found.'
-            }, status=status.HTTP_404_NOT_FOUND)
+            queryset = get_object_or_404(self.model, pk=pk)
+            queryset.username += str(uuid.uuid4()) + '_deleted'
+            queryset.email += str(uuid.uuid4()) + '_deleted'
+            queryset.is_active = False
+            queryset.deleted_at = timezone.now()
+            queryset.save()
+            return Response({}, status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
-            print(e)
-            return Response({
-                'ok': False,
-                'message': 'Error deleting user.',
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            print('Error message: ', e)
+            return Response({}, status.HTTP_500_INTERNAL_SERVER_ERROR)
