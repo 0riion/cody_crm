@@ -1,11 +1,12 @@
 import uuid
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
+from django.contrib.auth import authenticate
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import User
-from .serializers import UserListSerializer, UserSerializer, UserRetrieveSerializer
+from .serializers import UserListSerializer, UserRetrieveSerializer
 from libs.request_event import camel_to_snake_dict, snake_to_camel_dict
 
 
@@ -78,7 +79,7 @@ class UserView(viewsets.GenericViewSet):
     def create(self, request):
         try:
             body = camel_to_snake_dict(request.data)
-            serializer = UserSerializer(data=body)
+            serializer = UserRetrieveSerializer(data=body)
             if serializer.is_valid():
                 serializer.save()
                 return Response(
@@ -93,7 +94,7 @@ class UserView(viewsets.GenericViewSet):
     def update(self, request, pk=None):
         try:
             queryset = get_object_or_404(self.model, pk=pk)
-            serializer = UserSerializer(queryset, data=request.data)
+            serializer = UserRetrieveSerializer(queryset, data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(
@@ -109,7 +110,8 @@ class UserView(viewsets.GenericViewSet):
         try:
             queryset = get_object_or_404(self.model, pk=pk)
             body = camel_to_snake_dict(request.data)
-            serializer = UserSerializer(queryset, data=body, partial=True)
+            serializer = UserRetrieveSerializer(
+                queryset, data=body, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response(

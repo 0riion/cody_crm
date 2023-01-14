@@ -14,6 +14,8 @@ class UserListSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'username',
+            'first_name',
+            'last_name',
             'email',
             'avatar',
         )
@@ -25,6 +27,8 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'username',
+            'first_name',
+            'last_name',
             'email',
             'avatar',
             'created_at',
