@@ -1,10 +1,10 @@
-import uuid
 from django.db import models
-from django.contrib.auth.models import AbstractUser, PermissionsMixin
-from .mangers import UserManager
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+import uuid
+from services.users.managers import UserManager
 
 
-class User(AbstractUser, PermissionsMixin):
+class User(AbstractBaseUser, PermissionsMixin):
     id = models.CharField(
         max_length=255,
         unique=True,
@@ -13,87 +13,51 @@ class User(AbstractUser, PermissionsMixin):
         primary_key=True,
         default=uuid.uuid4
     )
-
     username = models.CharField(
-        max_length=10,
-        unique=True,
-        blank=False,
-        null=False
-    )
-
-    first_name = models.CharField(
         max_length=255,
-        blank=True,
-        null=True
+        unique=True,
     )
-
     email = models.EmailField(
+        'Email',
         max_length=255,
         unique=True,
-        blank=False,
-        null=False
     )
-
-    last_name = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True
-    )
-
-    email = models.EmailField(
-        max_length=255,
-        unique=True,
-        blank=False,
-        null=False
-    )
-
-    avatar = models.ImageField(
-        upload_to='users/avatars',
-        blank=True,
-        null=True
-    )
-
+    objects = UserManager()
     created_at = models.DateTimeField(
         'Created at',
         auto_now_add=True,
         blank=False,
         null=False
     )
-
     updated_at = models.DateTimeField(
         'Updated at',
         auto_now=True,
         blank=False,
         null=False
     )
-
     deleted_at = models.DateTimeField(
         'Deleted at',
         blank=True,
         null=True
     )
-
     is_active = models.BooleanField(
         default=True,
         blank=False,
         null=False
     )
-
     is_staff = models.BooleanField(
         default=False,
         blank=False,
         null=False
     )
 
-    objects = UserManager()
-
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'password']
-
-    def __str__(self):
-        return f'{self.first_name} {self.last_name}'
-
     class Meta:
         verbose_name = 'User'
         verbose_name_plural = 'Users'
-        ordering = ['-created_at']
+        db_table = 'user'
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
+
+    def __str__(self):
+        return self.username
