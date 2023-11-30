@@ -35,6 +35,3 @@ class Authentication(authentication.BaseAuthentication):
             raise exceptions.AuthenticationFailed('Credentials nor found.')
 
         return (self.user, 1)
-
-
-    
